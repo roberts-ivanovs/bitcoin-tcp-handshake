@@ -1,0 +1,4 @@
+# peer_address = "104.199.184.15:8333"
+peer_address = "127.0.0.1:18443"
+response_timeout_ms = 500
+connection_timeout_ms = 1500

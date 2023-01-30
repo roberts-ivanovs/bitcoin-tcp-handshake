@@ -1,4 +1,5 @@
 [toolchain]
 # https://rust-lang.github.io/rustup-components-history/aarch64-apple-darwin.html
-channel = "nightly-2022-01-29"
+channel = "nightly-2022-12-03"
+
 components = [ "rustfmt", "clippy", "cargo" ]

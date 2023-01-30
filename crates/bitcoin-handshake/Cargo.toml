@@ -1,0 +1,15 @@
+[package]
+name = "bitcoin-handshake"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Our libraries
+settings.workspace = true
+duplex-tcp-stream.workspace = true
+
+# Tracing
+tracing.workspace = true
+
+# Async
+tokio.workspace = true

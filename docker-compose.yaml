@@ -1,0 +1,14 @@
+
+services:
+  bitcoin:
+    image: ruimarinho/bitcoin-core:23.0
+    container_name: bitcoin-local
+    command:
+      -regtest=1
+      -rest
+      -rpcallowip=::/0
+      -server
+    ports:
+      - 18444:18444
+      - 18443:18443
+      - 8333:8333

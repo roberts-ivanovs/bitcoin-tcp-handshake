@@ -9,6 +9,34 @@ lto = "fat"
 codegen-units = 1
 
 [workspace.dependencies]
-config = { path = "crates/config" }
-models = { path = "crates/models" }
+# Our crates
+settings = { path = "crates/settings" }
+bitcoin-handshake = { path = "crates/bitcoin-handshake" }
+duplex-tcp-stream = { path = "crates/duplex-tcp-stream" }
 entrypoint = { path = "crates/entrypoint" }
+
+
+# Utils
+config = "0.13"
+
+
+# Serde
+serde = { version = "1", features = ["serde_derive", "derive"] }
+
+
+# tracing
+# Used for structured logs with tracing https://github.com/tokio-rs/tracing/discussions/1906
+valuable = { version = "0.1", features = ["derive", "alloc"] }
+tracing = { version = "0.1", features = ["valuable"] }
+tracing-subscriber = { version = "0.3", features = [
+  "env-filter",
+  "fmt",
+  "tracing-log",
+  "json",
+  "valuable",
+  "tracing",
+] }
+
+# Async
+futures = "0.3"
+tokio = { version = "1.0", features = ["full", "tracing"] }
