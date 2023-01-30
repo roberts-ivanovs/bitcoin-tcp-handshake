@@ -1,12 +1,7 @@
 mod trace;
 
-use bitcoin_handshake::BitcoinConnector;
-use tracing::info;
-use tracing::metadata::LevelFilter;
-use tracing_subscriber::prelude::*;
-use tracing_subscriber::EnvFilter;
-
 use anyhow::Result;
+use bitcoin_handshake::BitcoinConnector;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -20,7 +15,7 @@ async fn main() -> Result<()> {
     let mut node = BitcoinConnector::new(settings)
         .connect()
         .await?
-        .process_handshake()
+        .perform_handshake()
         .await?;
 
     // Query extra data from the node

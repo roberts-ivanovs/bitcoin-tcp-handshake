@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use config::{Config, Environment, File, FileFormat};
-use serde::{ Deserialize};
+use serde::Deserialize;
 
 use crate::configs::BASE_CONFIG;
 

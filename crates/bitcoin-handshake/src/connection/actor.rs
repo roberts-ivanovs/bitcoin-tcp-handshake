@@ -2,18 +2,15 @@
 ///! Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages.
 ///! There are [open discussions regarding this issue](https://github.com/rust-bitcoin/rust-bitcoin/issues/1251), but for now we have to use a blocking interface.
 use std::io::{BufReader, Write};
-use std::net::{SocketAddr, TcpStream};
+use std::net::TcpStream;
 
 use bitcoin::consensus::{encode, Decodable};
-use bitcoin::network::constants;
 use bitcoin::network::message::RawNetworkMessage;
-use models::{BitcoinMessage, Verack, Version};
-use tokio::net::tcp::WriteHalf;
 
 use super::handle::ToConnectionHandle;
 use super::FromConnectionHandle;
 // use tokio::net::TcpStream;
-use crate::error::{self, Error};
+use crate::error::Error;
 
 pub struct ConnectionActor {
     stream: std::net::TcpStream,
@@ -102,7 +99,7 @@ impl ConnectionActor {
                 match msg {
                     ToConnectionHandle::ToBitcoinNode(msg) => {
                         let msg = encode::serialize(&msg);
-                        let success = write_stream.write_all(&msg.as_slice());
+                        let success = write_stream.write_all(msg.as_slice());
                         if success.is_err() {
                             tracing::warn!("Failed to write message to the stream");
                             break;

@@ -4,15 +4,11 @@ use bitcoin::network::constants::{self, ServiceFlags};
 use bitcoin::network::message::{NetworkMessage, RawNetworkMessage};
 use bitcoin::network::message_network::VersionMessage;
 use bitcoin::network::Address;
-use models::{BitcoinMessage, Verack, Version};
 use rand::Rng;
-use tokio::io::AsyncReadExt;
-use tokio::net::tcp::WriteHalf;
-use tokio::net::TcpStream;
 use tracing::instrument;
 
 use super::actor::ConnectionActor;
-use crate::error::{self, Error};
+use crate::error::Error;
 
 #[derive(Debug)]
 pub struct ConnectionHandle {
@@ -39,7 +35,11 @@ pub enum FromConnectionHandle {
 
 impl ConnectionHandle {
     #[instrument(err, ret)]
-    pub async fn new(peer_address: SocketAddr, sender_address: SocketAddr, network: constants::Network) -> Result<Self, Error> {
+    pub async fn new(
+        peer_address: SocketAddr,
+        sender_address: SocketAddr,
+        network: constants::Network,
+    ) -> Result<Self, Error> {
         // Init communication primitives with the actor
         let (to_actor_sender, to_actor_receiver) = tokio::sync::mpsc::channel(10);
         let (from_actor_sender, from_actor_receiver) = tokio::sync::mpsc::channel(10);

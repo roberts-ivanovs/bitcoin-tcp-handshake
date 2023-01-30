@@ -1,6 +1,6 @@
-use tracing::info;
 use tracing::metadata::LevelFilter;
-use tracing_subscriber::{prelude::*, EnvFilter};
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::EnvFilter;
 
 /// Construct a subscriber that prints JSON formatted traces to stdout
 pub fn init_tracing() {
@@ -15,7 +15,7 @@ pub fn init_tracing() {
         .with_line_number(true)
         .with_thread_ids(false)
         .with_target(false);
-        // .json();
+    // .json();
     tracing_subscriber::registry()
         .with(fmt_layer)
         .with(env)

@@ -1,4 +1,3 @@
-mod connection;
 ///! Start the handshake with a foreign node.  The following steps have been taken from [the docs](https://developer.bitcoin.org/devguide/p2p_network.html#connecting-to-peers):
 ///! 1. Init a TCP connection to the target node
 ///! 2. Start a state machine over the TCP connection
@@ -7,16 +6,13 @@ mod connection;
 ///! 5. Then both nodes send a "verack" message to the other node to indicate the connection has been established.
 ///! 6. Once connected, the client can send to the remote node getaddr and "addr" messages to gather additional peers.
 mod error;
+mod connection;
 
-use std::{marker::PhantomData, ops::Deref};
-use std::net::SocketAddr;
+use std::marker::PhantomData;
 
-use bitcoin::network::Address;
 use connection::{ConnectionHandle, FromConnectionHandle};
 use error::Error;
 use settings::Settings;
-use tokio::io::{BufReader, ReadHalf};
-use tokio::net::TcpStream;
 use tracing::instrument;
 
 pub struct BitcoinConnector {
@@ -65,7 +61,7 @@ impl BitcoinConnection<PreHandshake> {
     }
 
     #[instrument(skip(self), err, ret)]
-    pub async fn process_handshake(mut self) -> Result<BitcoinConnection<Connected>, Error> {
+    pub async fn perform_handshake(mut self) -> Result<BitcoinConnection<Connected>, Error> {
         // TODO introduce timeout for handshake tokio::select! with tokio::sleep
         self.connection.send_version().await?;
         self.connection.receive_version().await?;
@@ -75,7 +71,6 @@ impl BitcoinConnection<PreHandshake> {
         let connection = BitcoinConnection::<Connected>::new(self.settings, self.connection);
         Ok(connection)
     }
-
 }
 
 impl BitcoinConnection<Connected> {

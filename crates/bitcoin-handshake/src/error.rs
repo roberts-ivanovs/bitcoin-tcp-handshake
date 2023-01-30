@@ -2,7 +2,6 @@ use thiserror::Error;
 
 use crate::connection::FromConnectionHandle;
 
-
 #[derive(Debug, Error)]
 pub enum Error {
     #[error(transparent)]

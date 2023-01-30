@@ -44,3 +44,13 @@ cargo run -p entrypoint
  <!-- TODO add docs -->
  <!-- TODO add tests -->
  <!-- TODO protect node under interior mutability -->
+
+
+## Development
+
+
+```bash
+# Aggressive formatting
+cargo +nightly fmt --all
+cargo clippy --fix --allow-dirty --allow-staged --workspace --bins --tests
+```
