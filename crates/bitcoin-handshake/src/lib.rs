@@ -8,10 +8,11 @@ mod connection;
 ///! 6. Once connected, the client can send to the remote node getaddr and "addr" messages to gather additional peers.
 mod error;
 
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops::Deref};
 use std::net::SocketAddr;
 
-use connection::ConnectionHandle;
+use bitcoin::network::Address;
+use connection::{ConnectionHandle, FromConnectionHandle};
 use error::Error;
 use settings::Settings;
 use tokio::io::{BufReader, ReadHalf};
@@ -33,7 +34,8 @@ impl BitcoinConnector {
         let sender_address = self.settings.sender_address();
         let peer_network = self.settings.peer_network();
 
-        let connection_handle = ConnectionHandle::new(peer_address, sender_address, peer_network).await?;
+        let connection_handle =
+            ConnectionHandle::new(peer_address, sender_address, peer_network).await?;
         let connection = BitcoinConnection::<PreHandshake>::new(self.settings, connection_handle);
 
         Ok(connection)
@@ -73,6 +75,7 @@ impl BitcoinConnection<PreHandshake> {
         let connection = BitcoinConnection::<Connected>::new(self.settings, self.connection);
         Ok(connection)
     }
+
 }
 
 impl BitcoinConnection<Connected> {
@@ -84,9 +87,11 @@ impl BitcoinConnection<Connected> {
         }
     }
 
-    pub async fn get_addr(&self) -> String {
-        // TODO: send getaddr message
-        // TODO: receive addr message
-        todo!()
+    pub async fn send_get_addr(&self) -> Result<(), Error> {
+        self.connection.send_get_addr().await
+    }
+
+    pub async fn receive(&mut self) -> Result<FromConnectionHandle, Error> {
+        self.connection.receive().await
     }
 }

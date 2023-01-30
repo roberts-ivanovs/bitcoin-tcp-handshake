@@ -82,6 +82,12 @@ impl ConnectionHandle {
             .ok_or(Error::ConnectionDied)
     }
 
+    pub async fn send_get_addr(&self) -> Result<(), Error> {
+        let message = NetworkMessage::GetAddr;
+
+        self.send_to_node(message).await
+    }
+
     pub async fn send_version(&self) -> Result<(), Error> {
         let message = build_version_message(&self.peer_address, &self.sender_address);
         let message = NetworkMessage::Version(message);
@@ -93,7 +99,7 @@ impl ConnectionHandle {
         let message = self.receive().await?;
 
         let FromConnectionHandle::FromBitcoinNode(NetworkMessage::Version(message)) = message else {
-            return Err(Error::UnexpectedConnectionMessage(message))
+            return Err(Error::UnexpectedConnectionMessage(Box::new(message)))
         };
 
         Ok(message)
@@ -108,10 +114,16 @@ impl ConnectionHandle {
     pub async fn receive_verack(&mut self) -> Result<(), Error> {
         let message = self.receive().await?;
         let FromConnectionHandle::FromBitcoinNode(NetworkMessage::Verack) = message else {
-            return Err(Error::UnexpectedConnectionMessage(message))
+            return Err(Error::UnexpectedConnectionMessage(Box::new(message)))
         };
 
         Ok(())
+    }
+}
+
+impl Drop for ConnectionHandle {
+    fn drop(&mut self) {
+        self.actor_handle.abort();
     }
 }
 

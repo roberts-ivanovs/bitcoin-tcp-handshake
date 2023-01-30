@@ -30,3 +30,17 @@ cargo run -p entrypoint
 ## Architecture
 
 <!-- TODO -->
+<!--
+1. abstraction layers
+2. duplex streams
+3. explain the actor model
+4. common crates and approaches
+ -->
+
+ <!-- TODO can we drop nightly? -->
+
+ <!-- TODO setup formatting -->
+
+ <!-- TODO add docs -->
+ <!-- TODO add tests -->
+ <!-- TODO protect node under interior mutability -->

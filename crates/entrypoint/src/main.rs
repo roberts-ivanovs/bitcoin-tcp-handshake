@@ -17,20 +17,20 @@ async fn main() -> Result<()> {
     trace::init_tracing();
 
     // Connect to the node
-    let node = BitcoinConnector::new(settings)
+    let mut node = BitcoinConnector::new(settings)
         .connect()
         .await?
         .process_handshake()
         .await?;
 
     // Query extra data from the node
-    let addr_info = node.get_addr().await;
-    tracing::info!(
-        r#"
-    The following message acts as proof that a successful handshake has been
-    established and extra data can be queried: {:?}"#,
-        addr_info
-    );
+    node.send_get_addr().await?;
+    tracing::info!("The response usually takes a few seconds to arrive...");
+
+    // Receive messages from the node
+    while let Ok(msg) = node.receive().await {
+        tracing::info!(msg = ?msg);
+    }
 
     Ok(())
 }
