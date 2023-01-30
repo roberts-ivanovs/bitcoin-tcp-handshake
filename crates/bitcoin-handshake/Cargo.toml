@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 # Our libraries
 settings.workspace = true
-models.workspace = true
 
 # Tracing
 tracing.workspace = true

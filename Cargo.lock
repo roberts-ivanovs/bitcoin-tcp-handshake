@@ -108,7 +108,6 @@ version = "0.1.0"
 dependencies = [
  "bitcoin",
  "chrono",
- "models",
  "rand",
  "settings",
  "thiserror",
@@ -485,10 +484,6 @@ dependencies = [
  "wasi",
  "windows-sys",
 ]
-
-[[package]]
-name = "models"
-version = "0.1.0"
 
 [[package]]
 name = "nom"

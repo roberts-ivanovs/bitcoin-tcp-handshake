@@ -14,7 +14,6 @@ settings = { path = "crates/settings" }
 bitcoin-handshake = { path = "crates/bitcoin-handshake" }
 duplex-tcp-stream = { path = "crates/duplex-tcp-stream" }
 entrypoint = { path = "crates/entrypoint" }
-models = { path = "crates/models" }
 
 
 # Utils
