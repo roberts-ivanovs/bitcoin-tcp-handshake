@@ -1,16 +1,11 @@
-///! Start the handshake with a foreign node.  The following steps have been taken from [the docs](https://developer.bitcoin.org/devguide/p2p_network.html#connecting-to-peers):
-///! 1. Init a TCP connection to the target node
-///! 2. Start a state machine over the TCP connection
-///! 3. Connecting to a peer is done by sending a "version" message, which contains your version number, block, and current time to the remote node
-///! 4. The remote node responds with its own "version" message.
-///! 5. Then both nodes send a "verack" message to the other node to indicate the connection has been established.
-///! 6. Once connected, the client can send to the remote node getaddr and "addr" messages to gather additional peers.
-mod error;
 mod connection;
+mod error;
 
 use std::marker::PhantomData;
 
-use connection::{ConnectionHandle, FromConnectionHandle};
+pub use bitcoin::network;
+use connection::ConnectionHandle;
+pub use connection::FromConnectionHandle;
 use error::Error;
 use settings::Settings;
 use tracing::instrument;

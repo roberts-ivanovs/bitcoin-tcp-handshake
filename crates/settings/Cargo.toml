@@ -6,5 +6,4 @@ edition = "2021"
 [dependencies]
 config.workspace = true
 serde.workspace = true
-valuable.workspace = true
 bitcoin.workspace = true

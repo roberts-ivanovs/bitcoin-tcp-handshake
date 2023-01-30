@@ -1,7 +1,7 @@
 mod trace;
 
 use anyhow::Result;
-use bitcoin_handshake::BitcoinConnector;
+use bitcoin_handshake::{network::message::NetworkMessage, BitcoinConnector, FromConnectionHandle};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -25,7 +25,16 @@ async fn main() -> Result<()> {
     // Receive messages from the node
     while let Ok(msg) = node.receive().await {
         tracing::info!(msg = ?msg);
+
+        // Stop the loop when we receive the Addr message
+        if matches!(
+            msg,
+            FromConnectionHandle::FromBitcoinNode(NetworkMessage::Addr(_))
+        ) {
+            break;
+        }
     }
 
+    // TODO the node is not closed properly. process hangs up
     Ok(())
 }

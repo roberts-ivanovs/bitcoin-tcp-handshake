@@ -31,14 +31,12 @@ serde = { version = "1", features = ["serde_derive", "derive"] }
 
 # tracing
 # Used for structured logs with tracing https://github.com/tokio-rs/tracing/discussions/1906
-valuable = { version = "0.1", features = ["derive", "alloc"] }
-tracing = { version = "0.1", features = ["valuable"] }
+tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = [
   "env-filter",
   "fmt",
   "tracing-log",
   "json",
-  "valuable",
   "tracing",
 ] }
 

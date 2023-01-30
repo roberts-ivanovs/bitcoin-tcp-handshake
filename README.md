@@ -6,6 +6,8 @@
 TLDR
 ```bash
 PEER_ADDRESS="$(dig seed.bitcoin.sipa.be +short | head -n 1):8333" && cargo run -p entrypoint
+# OR
+PEER_ADDRESS="2.59.236.56:8333" cargo run -p entrypoint
 ```
 
 ---
@@ -28,6 +30,13 @@ cargo run -p entrypoint
 ```
 
 ## Architecture
+
+Start the handshake with a foreign node. The following steps have been taken from [the docs](https://developer.bitcoin.org/devguide/p2p_network.html#connecting-to-peers):
+1. Init a TCP connection to the target node
+2. Connecting to a peer is done by sending a "version" message, which contains your version number, block, and current time to the remote node
+3. The remote node responds with its own "version" message.
+4. Then both nodes send a "verack" message to the other node to indicate the connection has been established.
+5. Once connected, the client can send to the remote node getaddr and "addr" messages to gather additional peers.
 
 <!-- TODO -->
 <!--
