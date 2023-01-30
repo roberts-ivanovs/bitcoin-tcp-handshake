@@ -1,3 +1,4 @@
+mod connection;
 ///! Start the handshake with a foreign node.  The following steps have been taken from [the docs](https://developer.bitcoin.org/devguide/p2p_network.html#connecting-to-peers):
 ///! 1. Init a TCP connection to the target node
 ///! 2. Start a state machine over the TCP connection
@@ -6,7 +7,6 @@
 ///! 5. Then both nodes send a "verack" message to the other node to indicate the connection has been established.
 ///! 6. Once connected, the client can send to the remote node getaddr and "addr" messages to gather additional peers.
 mod error;
-mod connection;
 
 use std::marker::PhantomData;
 use std::net::SocketAddr;
@@ -29,11 +29,14 @@ impl BitcoinConnector {
 
     #[instrument(skip(self), err, ret)]
     pub async fn connect(self) -> Result<BitcoinConnection<PreHandshake>, Error> {
-        let connection = ConnectionHandle::new(self.settings.peer_address()).await?;
-        Ok(BitcoinConnection::<PreHandshake>::new(
-            self.settings,
-            connection,
-        ))
+        let peer_address = self.settings.peer_address();
+        let sender_address = self.settings.sender_address();
+        let peer_network = self.settings.peer_network();
+
+        let connection_handle = ConnectionHandle::new(peer_address, sender_address, peer_network).await?;
+        let connection = BitcoinConnection::<PreHandshake>::new(self.settings, connection_handle);
+
+        Ok(connection)
     }
 }
 
@@ -67,15 +70,13 @@ impl BitcoinConnection<PreHandshake> {
         self.connection.send_verack().await?;
         self.connection.receive_verack().await?;
 
-        Ok(BitcoinConnection::<Connected>::new(
-            self.settings,
-            self.connection,
-        ))
+        let connection = BitcoinConnection::<Connected>::new(self.settings, self.connection);
+        Ok(connection)
     }
 }
 
 impl BitcoinConnection<Connected> {
-    pub(crate) fn new(settings: Settings, connection: ConnectionHandle) -> Self {
+    pub(self) fn new(settings: Settings, connection: ConnectionHandle) -> Self {
         Self {
             settings,
             connection,

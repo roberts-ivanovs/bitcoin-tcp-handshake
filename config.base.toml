@@ -1,4 +1,5 @@
-# peer_address = "104.199.184.15:8333"
-peer_address = "127.0.0.1:18443"
+peer_address = "66.75.246.27:8333"
+peer_network = "bitcoin"
+sender_address = "0.0.0.0:0"
 response_timeout_ms = 500
 connection_timeout_ms = 1500

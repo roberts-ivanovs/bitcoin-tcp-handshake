@@ -16,8 +16,16 @@ duplex-tcp-stream = { path = "crates/duplex-tcp-stream" }
 entrypoint = { path = "crates/entrypoint" }
 models = { path = "crates/models" }
 
+
 # Utils
 config = "0.13"
+chrono = { version = "0.4.22", default-features = false, features = [
+  "serde",
+  "clock",
+  "std",
+] }
+rand = "0.8"
+
 
 # Serde
 serde = { version = "1", features = ["serde_derive", "derive"] }
@@ -39,6 +47,11 @@ tracing-subscriber = { version = "0.3", features = [
 futures = "0.3"
 tokio = { version = "1.0", features = ["full", "tracing"] }
 
+
 # Error handling
 anyhow = { version = "1.0", features = ["backtrace"] }
 thiserror = "1.0"
+
+
+# Blockchain specific data types
+bitcoin = { version = "0.29", default-features = false, features = ["serde", "std"] }

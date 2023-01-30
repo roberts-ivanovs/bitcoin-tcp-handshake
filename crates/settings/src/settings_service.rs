@@ -8,8 +8,10 @@ use crate::configs::BASE_CONFIG;
 #[derive(Debug, Clone, Deserialize)]
 pub struct Settings {
     peer_address: SocketAddr,
+    sender_address: SocketAddr,
     response_timeout_ms: u64,
     connection_timeout_ms: u64,
+    peer_network: bitcoin::Network,
 }
 
 impl Settings {
@@ -26,6 +28,14 @@ impl Settings {
 
     pub fn peer_address(&self) -> SocketAddr {
         self.peer_address
+    }
+
+    pub fn peer_network(&self) -> bitcoin::Network {
+        self.peer_network
+    }
+
+    pub fn sender_address(&self) -> SocketAddr {
+        self.sender_address
     }
 }
 

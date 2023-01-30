@@ -7,3 +7,4 @@ edition = "2021"
 config.workspace = true
 serde.workspace = true
 valuable.workspace = true
+bitcoin.workspace = true

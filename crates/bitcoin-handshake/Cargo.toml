@@ -11,8 +11,15 @@ models.workspace = true
 # Tracing
 tracing.workspace = true
 
+# Utils
+chrono.workspace = true
+rand.workspace = true
+
 # Async
 tokio.workspace = true
 
 # Error handling
 thiserror.workspace = true
+
+# Bitcoin data types
+bitcoin.workspace = true
