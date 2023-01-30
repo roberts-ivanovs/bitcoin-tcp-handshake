@@ -1,14 +1,16 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+
+#[derive(Debug)]
+pub enum BitcoinMessage {
+    Version(Version),
+    Verack(Verack),
+    GetAddr(GetAddr),
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[derive(Debug)]
+pub struct Version;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+#[derive(Debug)]
+pub struct Verack;
+
+#[derive(Debug)]
+pub struct GetAddr;

@@ -6,13 +6,10 @@ use serde::{ Deserialize};
 use crate::configs::BASE_CONFIG;
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct PeerNode {
-    address: SocketAddr,
-}
-
-#[derive(Debug, Clone, Deserialize)]
 pub struct Settings {
     peer_address: SocketAddr,
+    response_timeout_ms: u64,
+    connection_timeout_ms: u64,
 }
 
 impl Settings {

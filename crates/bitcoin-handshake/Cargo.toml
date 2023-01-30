@@ -6,10 +6,13 @@ edition = "2021"
 [dependencies]
 # Our libraries
 settings.workspace = true
-duplex-tcp-stream.workspace = true
+models.workspace = true
 
 # Tracing
 tracing.workspace = true
 
 # Async
 tokio.workspace = true
+
+# Error handling
+thiserror.workspace = true

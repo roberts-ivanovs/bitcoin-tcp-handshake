@@ -1,9 +1,0 @@
-[package]
-name = "duplex-tcp-stream"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-
-# Async
-tokio.workspace = true

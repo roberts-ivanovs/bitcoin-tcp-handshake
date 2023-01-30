@@ -14,15 +14,13 @@ settings = { path = "crates/settings" }
 bitcoin-handshake = { path = "crates/bitcoin-handshake" }
 duplex-tcp-stream = { path = "crates/duplex-tcp-stream" }
 entrypoint = { path = "crates/entrypoint" }
-
+models = { path = "crates/models" }
 
 # Utils
 config = "0.13"
 
-
 # Serde
 serde = { version = "1", features = ["serde_derive", "derive"] }
-
 
 # tracing
 # Used for structured logs with tracing https://github.com/tokio-rs/tracing/discussions/1906
@@ -40,3 +38,7 @@ tracing-subscriber = { version = "0.3", features = [
 # Async
 futures = "0.3"
 tokio = { version = "1.0", features = ["full", "tracing"] }
+
+# Error handling
+anyhow = { version = "1.0", features = ["backtrace"] }
+thiserror = "1.0"

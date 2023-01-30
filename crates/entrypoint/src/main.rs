@@ -1,36 +1,36 @@
-use bitcoin_handshake::BitcoinNode;
-use tracing::{info, metadata::LevelFilter};
-use tracing_subscriber::{prelude::*, EnvFilter};
+mod trace;
+
+use bitcoin_handshake::BitcoinConnector;
+use tracing::info;
+use tracing::metadata::LevelFilter;
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::EnvFilter;
+
+use anyhow::Result;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Init settings
     let settings = settings::Settings::new();
 
     // Init tracing
-    init_tracing();
+    trace::init_tracing();
 
-    let node = BitcoinNode::new(settings);
-    node.start().await
-}
+    // Connect to the node
+    let node = BitcoinConnector::new(settings)
+        .connect()
+        .await?
+        .process_handshake()
+        .await?;
 
+    // Query extra data from the node
+    let addr_info = node.get_addr().await;
+    tracing::info!(
+        r#"
+    The following message acts as proof that a successful handshake has been
+    established and extra data can be queried: {:?}"#,
+        addr_info
+    );
 
-/// Construct a subscriber that prints JSON formatted traces to stdout
-fn init_tracing() {
-    let env=  EnvFilter::builder()
-         .with_default_directive(LevelFilter::INFO.into())
-         .with_env_var("RUST_LOG")
-         .from_env_lossy();
-
-    let fmt_layer = tracing_subscriber::fmt::layer()
-        .compact()
-        .with_file(true)
-        .with_line_number(true)
-        .with_thread_ids(false)
-        .with_target(false)
-        .json();
-    tracing_subscriber::registry()
-        .with(fmt_layer)
-        .with(env)
-        .init();
+    Ok(())
 }
