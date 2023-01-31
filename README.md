@@ -9,9 +9,9 @@ TLDR
 ```bash
 PEER_ADDRESS="$(dig seed.bitcoin.sipa.be +short | head -n 1):8333" && cargo run -p node --example handshake
 # OR
-PEER_ADDRESS="2.59.236.56:8333" cargo run -p node --example handshake
+PEER_ADDRESS="66.75.246.27:8333" cargo run -p node --example handshake
 # To view debug logs (will log received messages from node)
-RUST_LOG="debug" PEER_ADDRESS="2.59.236.56:8333" cargo run -p node --example handshake
+RUST_LOG="debug" PEER_ADDRESS="66.75.246.27:8333" cargo run -p node --example handshake
 ```
 
 ### Longer version
@@ -27,7 +27,7 @@ Then, run the handshake tool, by setting one of the IP addresses to the `PEER_AD
 
 ```bash
 # Option 1
-PEER_ADDRESS="2.59.236.56:8333" cargo run -p node --example handshake
+PEER_ADDRESS="66.75.246.27:8333" cargo run -p node --example handshake
 # Option 2 - alter the config.base.toml. This will be the default address, but requires a recompilation
 cargo run -p node --example handshake
 ```
