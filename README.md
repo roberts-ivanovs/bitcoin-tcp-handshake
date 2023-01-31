@@ -7,11 +7,9 @@
 ## Running the handshake tool
 TLDR
 ```bash
-PEER_ADDRESS="$(dig seed.bitcoin.sipa.be +short | head -n 1):8333" && cargo run -p node --example handshake
-# OR
-PEER_ADDRESS="66.75.246.27:8333" cargo run -p node --example handshake
-# To view debug logs (will log received messages from node)
 RUST_LOG="debug" PEER_ADDRESS="66.75.246.27:8333" cargo run -p node --example handshake
+# To remove node message logs, remove the RUST_LOG parameter (defaults to info)
+PEER_ADDRESS="66.75.246.27:8333" cargo run -p node --example handshake
 ```
 
 ### Longer version
@@ -23,7 +21,7 @@ To get the IP address of a node, we can manually perform the steps as described 
 $ dig seed.bitcoin.sipa.be +short
 ```
 
-Then, run the handshake tool, by setting one of the IP addresses to the `PEER_ADDRESS` environment variable:
+Then, run the handshake tool, you need to set the IP addresses to the `PEER_ADDRESS` environment variable:
 
 ```bash
 # Option 1
@@ -50,7 +48,7 @@ Start the handshake with a foreign node. The following steps have been taken fro
 
 #### Implementation details
 1. Duplex (bidirectional) streams are used to communicate with the remote node.
-2. Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages, as it is tied to the `io::Read` trait, which is not implemented by tokio (and thus Tokio implementation of `TcpStream` ). The blocking TCP stream operations are delegated to the blocking thread of Tokio using `tokio::task::block_in_place()`.
+2. Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages, as it is tied to the `io::Read` trait, which is not implemented by Tokios implementation of `TcpStream`. The blocking TCP stream operations are delegated to the blocking thread of Tokio using `tokio::task::block_in_place()`.
 3. The stream processor is implemented using the actor pattern with [Tokio (pattern described here)](https://ryhl.io/blog/actors-with-tokio/), this allows for flexibility where we can have stateful logic and asynchronous tasks that work with the TCP connection (e.g. periodic ping-pong messages, automated responses for incoming messages). The rest of the system can consume and build a more sophisticated model top of this message processing actor as needed.
 
 
