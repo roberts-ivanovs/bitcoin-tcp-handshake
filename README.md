@@ -44,16 +44,13 @@ Start the handshake with a foreign node. The following steps have been taken fro
 
 ### Code overview
 1. The `settings` crate will parse the env variables, as well as the local `config.base.toml` config file. It provides a `Settings` struct that can be used to configure the application.
-2. The `entrypoint` crate is the entrypoint of the application. It is responsible for instantiating a new connection to the remote node, and starting the handshake.
-3. The `node` crate is responsible for the handshake. It performs creates a TCP connection, performs the all of the message wiring and data parsing, and performs the handshake.
+2. The `node` crate is responsible for the handshake. It performs creates a TCP connection, performs the all of the message wiring and data parsing, and performs the handshake.
+3. The `handshake` example for the `node` crate acts as the executable for the bitcoin wrapper library (`node` crate). It demonstrates how to instantiate a new connection to the remote node, start the the handshake.
 
 #### Implementation details
 1. Duplex (bidirectional) streams are used to communicate with the remote node.
 2. Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages, as it is tied to the `io::Read` trait, which is not implemented by tokio (and thus Tokio implementation of `TcpStream` ). The blocking TCP stream operations are delegated to the blocking thread of Tokio using `tokio::task::block_in_place()`.
 3. The stream processor is implemented using the actor pattern with [Tokio (pattern described here)](https://ryhl.io/blog/actors-with-tokio/), this allows for flexibility where we can have stateful logic and asynchronous tasks that work with the TCP connection (e.g. periodic ping-pong messages, automated responses for incoming messages). The rest of the system can consume and build a more sophisticated model top of this message processing actor as needed.
-
- <!-- TODO add tests -->
- <!-- TODO derive all the common traits for structs -->
 
 
 ## Development

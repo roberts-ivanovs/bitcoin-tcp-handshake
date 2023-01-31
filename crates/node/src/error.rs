@@ -13,5 +13,5 @@ pub enum Error {
     /// we want to minimise the stack footprint of the error.
     UnexpectedConnectionMessage(Box<FromConnectionHandle>),
     #[error("Connection died")]
-    ConnectionDied,
+    ActorUnavailable,
 }

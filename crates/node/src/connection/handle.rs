@@ -21,11 +21,18 @@ pub struct ConnectionHandle {
     actor_handle: tokio::task::JoinHandle<()>,
 }
 
+/// Represents commands and messages that are sent to the actor.
+/// Currently, we are only interested in sending messages to the bitcoin node,
+/// but this allows for extensible design, the actor could have internal state that reacts on other commands
+/// like `Stop` or `Start`, `Restart`. The whole `InitHandshake` could be moved to the actor as well and could be invoked externally.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum ToConnectionHandle {
     ToBitcoinNode(RawNetworkMessage),
 }
 
+/// Represents messages that are received from the actor.
+/// Currently, we are only interested in messages from the bitcoin node,
+/// The actor could send other messages like `HandshakeComplete` or `HandshakeFailed`.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum FromConnectionHandle {
     /// Message from the bitcoin node. We are not interested in the magic number,
@@ -34,12 +41,13 @@ pub enum FromConnectionHandle {
 }
 
 impl ConnectionHandle {
-    #[instrument(err, ret)]
+    #[instrument(err, fields(peer_address, sender_address, network))]
     pub async fn new(
         peer_address: SocketAddr,
         sender_address: SocketAddr,
         network: constants::Network,
     ) -> Result<Self, Error> {
+        tracing::info!("Creating connection to node");
         // The size of mpsc channels before they start blocking
         const CHANNEL_SIZE: usize = 10;
 
@@ -83,7 +91,7 @@ impl ConnectionHandle {
         self.from_actor_receiver
             .recv()
             .await
-            .ok_or(Error::ConnectionDied)
+            .ok_or(Error::ActorUnavailable)
     }
 
     pub async fn send_get_addr(&self) -> Result<(), Error> {

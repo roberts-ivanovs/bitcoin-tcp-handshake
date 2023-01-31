@@ -1,4 +1,3 @@
-
 use std::net::SocketAddr;
 
 use config::{Config, Environment, File, FileFormat};

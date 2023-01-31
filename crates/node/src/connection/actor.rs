@@ -1,7 +1,7 @@
 ///! This module contains the actor that handles the connection to the bitcoin node.
 ///! Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages.
 ///! There are [open discussions regarding this issue](https://github.com/rust-bitcoin/rust-bitcoin/issues/1251), but for now we have to use a blocking interface.
-use std::io::{BufReader, Write};
+use std::{io::{BufReader, Write}, net::Shutdown};
 use std::net::TcpStream;
 
 use bitcoin::consensus::{encode, Decodable};
@@ -84,7 +84,10 @@ impl ConnectionActor {
                         }
                     }
                     Err(err) => {
-                        tracing::error!("Failed to read decode from the stream: {:?}", err);
+                        // https://www.reddit.com/r/rust/comments/b095ag/failed_to_fill_whole_buffer_error_with_bufreader/
+                        // https://stackoverflow.com/questions/70739158/failed-to-fill-whole-buffer-error-message-when-trying-to-deserialise-an-object
+                        tracing::error!("Failed to read-decode message from the stream: {:?}. This usually happens when the node sends some data that we cannot deserialize.", err);
+                        let _ = read_stream.get_ref().shutdown(Shutdown::Both);
                         break;
                     }
                 }
@@ -103,11 +106,13 @@ impl ConnectionActor {
                     ToConnectionHandle::ToBitcoinNode(msg) => {
                         let success = tokio::task::block_in_place(|| {
                             let msg = encode::serialize(&msg);
-                            write_stream.write_all(msg.as_slice())
+                            let _ = write_stream.write_all(msg.as_slice());
+                            write_stream.flush()
                         });
 
                         if success.is_err() {
                             tracing::warn!("Failed to write message to the stream");
+                            let _ = write_stream.shutdown(Shutdown::Both);
                             break;
                         }
                     }

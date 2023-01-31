@@ -1,5 +1,5 @@
 [toolchain]
-# https://rust-lang.github.io/rustup-components-history/aarch64-apple-darwin.html
-channel = "stable"
+# https://rust-lang.github.io/rustup/concepts/toolchains.html
+channel = "1.67.0"
 
 components = [ "rustfmt", "clippy", "cargo" ]

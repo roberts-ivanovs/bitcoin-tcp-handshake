@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
 
     // Init tracing
     trace::init_tracing();
-    tracing::info!("(set RUST_LOG=debug mode to view full node messages)");
+    tracing::info!("(set RUST_LOG=debug mode to view all transmitting messages)");
 
     // Connect to the node
     let mut node = BitcoinConnector::new(settings)
@@ -23,8 +23,8 @@ async fn main() -> Result<()> {
         .await?;
 
     // Query extra data from the node
+    tracing::info!("Query extra data from the node to demonstrate that the connection is active");
     node.send_get_addr().await?;
-    tracing::info!("The response usually takes a few seconds to arrive...");
 
     // Receive messages from the node. Usually I wouldn't expose the receiver to the end-user, but this is just for demo purposes.
     while let Ok(msg) = node.receive().await {
@@ -35,6 +35,5 @@ async fn main() -> Result<()> {
         }
     }
 
-    tracing::info!("The node is closing...");
     process::exit(0);
 }
