@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use config::{Config, Environment, File, FileFormat};
 use serde::Deserialize;
 
-use crate::configs::BASE_CONFIG;
+const BASE_CONFIG: &str = include_str!("../../../config.base.toml");
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize)]
 pub struct Settings {

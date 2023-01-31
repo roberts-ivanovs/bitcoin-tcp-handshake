@@ -1,8 +1,11 @@
+use std::net::TcpStream;
 ///! This module contains the actor that handles the connection to the bitcoin node.
 ///! Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages.
 ///! There are [open discussions regarding this issue](https://github.com/rust-bitcoin/rust-bitcoin/issues/1251), but for now we have to use a blocking interface.
-use std::{io::{BufReader, Write}, net::Shutdown};
-use std::net::TcpStream;
+use std::{
+    io::{BufReader, Write},
+    net::Shutdown,
+};
 
 use bitcoin::consensus::{encode, Decodable};
 use bitcoin::network::message::RawNetworkMessage;

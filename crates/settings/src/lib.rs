@@ -1,4 +1,4 @@
-mod configs;
-mod settings_service;
+///! Crate for compiling and loading settings from a config file and env variables.
+mod settings;
 
-pub use settings_service::Settings;
+pub use settings::Settings;
