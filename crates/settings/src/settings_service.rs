@@ -9,8 +9,6 @@ use crate::configs::BASE_CONFIG;
 pub struct Settings {
     peer_address: SocketAddr,
     sender_address: SocketAddr,
-    response_timeout_ms: u64,
-    connection_timeout_ms: u64,
     peer_network: bitcoin::Network,
 }
 

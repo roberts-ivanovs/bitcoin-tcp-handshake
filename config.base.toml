@@ -1,5 +1,3 @@
 peer_address = "66.75.246.27:8333"
-peer_network = "bitcoin"
+peer_network = "bitcoin"           # "testnet", "regtest", "signet" are also supported
 sender_address = "0.0.0.0:0"
-response_timeout_ms = 500
-connection_timeout_ms = 1500

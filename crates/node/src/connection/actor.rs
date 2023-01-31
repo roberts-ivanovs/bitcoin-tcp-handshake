@@ -58,7 +58,7 @@ impl ConnectionActor {
 
         read_task.abort();
         write_task.abort();
-        tracing::error!("Socket stream processing over");
+        tracing::info!("Socket stream processing over");
     }
 
     /// Read messages from the stream and propagate them to the outside world
@@ -69,8 +69,9 @@ impl ConnectionActor {
         tokio::spawn(async move {
             let mut read_stream = BufReader::new(read_stream);
             loop {
-                let msg = RawNetworkMessage::consensus_decode(&mut read_stream);
-                match msg {
+                match tokio::task::block_in_place(|| {
+                    RawNetworkMessage::consensus_decode(&mut read_stream)
+                }) {
                     Ok(msg) => {
                         let sent = outgoing_messages
                             .send(FromConnectionHandle::FromBitcoinNode(msg.payload))
@@ -98,8 +99,11 @@ impl ConnectionActor {
             while let Some(msg) = incoming_messages.recv().await {
                 match msg {
                     ToConnectionHandle::ToBitcoinNode(msg) => {
-                        let msg = encode::serialize(&msg);
-                        let success = write_stream.write_all(msg.as_slice());
+                        let success = tokio::task::block_in_place(|| {
+                            let msg = encode::serialize(&msg);
+                            write_stream.write_all(msg.as_slice())
+                        });
+
                         if success.is_err() {
                             tracing::warn!("Failed to write message to the stream");
                             break;

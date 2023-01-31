@@ -40,9 +40,12 @@ impl ConnectionHandle {
         sender_address: SocketAddr,
         network: constants::Network,
     ) -> Result<Self, Error> {
+        // The size of mpsc channels before they start blocking
+        const CHANNEL_SIZE: usize = 10;
+
         // Init communication primitives with the actor
-        let (to_actor_sender, to_actor_receiver) = tokio::sync::mpsc::channel(10);
-        let (from_actor_sender, from_actor_receiver) = tokio::sync::mpsc::channel(10);
+        let (to_actor_sender, to_actor_receiver) = tokio::sync::mpsc::channel(CHANNEL_SIZE);
+        let (from_actor_sender, from_actor_receiver) = tokio::sync::mpsc::channel(CHANNEL_SIZE);
 
         // Spawn the actor
         let actor = ConnectionActor::new(peer_address, to_actor_receiver, from_actor_sender)?;
@@ -60,8 +63,9 @@ impl ConnectionHandle {
     }
 
     /// Common send method for all messages, will properly map the error types
-    #[instrument(skip(self), err, ret)]
+    #[instrument(skip(self), err)]
     async fn send_to_node(&self, message: NetworkMessage) -> Result<(), Error> {
+        tracing::debug!("Sending message to node: {:?}", message);
         let message = RawNetworkMessage {
             magic: self.network.magic(),
             payload: message,
@@ -74,7 +78,7 @@ impl ConnectionHandle {
         Ok(())
     }
 
-    #[instrument(skip(self), err, ret)]
+    #[instrument(level = "debug", skip(self), ret, err)]
     pub async fn receive(&mut self) -> Result<FromConnectionHandle, Error> {
         self.from_actor_receiver
             .recv()
@@ -118,12 +122,6 @@ impl ConnectionHandle {
         };
 
         Ok(())
-    }
-}
-
-impl Drop for ConnectionHandle {
-    fn drop(&mut self) {
-        self.actor_handle.abort();
     }
 }
 

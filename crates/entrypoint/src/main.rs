@@ -1,7 +1,10 @@
 mod trace;
 
+use std::process;
+
 use anyhow::Result;
-use bitcoin_handshake::{network::message::NetworkMessage, BitcoinConnector, FromConnectionHandle};
+use node::network::message::NetworkMessage;
+use node::{BitcoinConnector, FromConnectionHandle};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -10,6 +13,7 @@ async fn main() -> Result<()> {
 
     // Init tracing
     trace::init_tracing();
+    tracing::info!("(enable DEBUG mode to view full message)");
 
     // Connect to the node
     let mut node = BitcoinConnector::new(settings)
@@ -22,19 +26,15 @@ async fn main() -> Result<()> {
     node.send_get_addr().await?;
     tracing::info!("The response usually takes a few seconds to arrive...");
 
-    // Receive messages from the node
+    // Receive messages from the node. Usually I wouldn't expose the receiver to the end-user, but this is just for demo purposes.
     while let Ok(msg) = node.receive().await {
-        tracing::info!(msg = ?msg);
-
-        // Stop the loop when we receive the Addr message
-        if matches!(
-            msg,
-            FromConnectionHandle::FromBitcoinNode(NetworkMessage::Addr(_))
-        ) {
+        // Break the loop when we receive the Addr message
+        if let FromConnectionHandle::FromBitcoinNode(NetworkMessage::Addr(msg)) = msg {
+            tracing::info!("The Addr message has been received, len - {}", msg.len());
             break;
         }
     }
 
-    // TODO the node is not closed properly. process hangs up
-    Ok(())
+    tracing::info!("The node is closing...");
+    process::exit(0);
 }

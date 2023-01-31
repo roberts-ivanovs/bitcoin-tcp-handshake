@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Our crates
-bitcoin-handshake.workspace = true
+node.workspace = true
 settings.workspace = true
 
 # Async

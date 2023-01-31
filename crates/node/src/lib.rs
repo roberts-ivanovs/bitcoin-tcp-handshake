@@ -19,7 +19,8 @@ impl BitcoinConnector {
         Self { settings }
     }
 
-    #[instrument(skip(self), err, ret)]
+    /// Start a new connection to the bitcoin node.
+    #[instrument(skip(self), err)]
     pub async fn connect(self) -> Result<BitcoinConnection<PreHandshake>, Error> {
         let peer_address = self.settings.peer_address();
         let sender_address = self.settings.sender_address();
@@ -39,6 +40,7 @@ pub struct Connected;
 #[derive(Debug)]
 pub struct PreHandshake;
 
+/// Typestate pattern enforced connection. To ensure that the handshake is performed before sending any subsequent messages
 #[derive(Debug)]
 pub struct BitcoinConnection<T> {
     settings: Settings,
@@ -55,9 +57,10 @@ impl BitcoinConnection<PreHandshake> {
         }
     }
 
+    /// Initiate the handshake with the peer. This will send the version message and wait for the verack message.
     #[instrument(skip(self), err, ret)]
     pub async fn perform_handshake(mut self) -> Result<BitcoinConnection<Connected>, Error> {
-        // TODO introduce timeout for handshake tokio::select! with tokio::sleep
+        // handshake data specific validation should happen at this level.
         self.connection.send_version().await?;
         self.connection.receive_version().await?;
         self.connection.send_verack().await?;
@@ -81,6 +84,7 @@ impl BitcoinConnection<Connected> {
         self.connection.send_get_addr().await
     }
 
+    /// Expose receive method from the connection handle for demo purposes. In a real application this would be replaced by a more abstract interface.
     pub async fn receive(&mut self) -> Result<FromConnectionHandle, Error> {
         self.connection.receive().await
     }

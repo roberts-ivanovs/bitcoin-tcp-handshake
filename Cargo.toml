@@ -11,7 +11,7 @@ codegen-units = 1
 [workspace.dependencies]
 # Our crates
 settings = { path = "crates/settings" }
-bitcoin-handshake = { path = "crates/bitcoin-handshake" }
+node = { path = "crates/node" }
 duplex-tcp-stream = { path = "crates/duplex-tcp-stream" }
 entrypoint = { path = "crates/entrypoint" }
 
