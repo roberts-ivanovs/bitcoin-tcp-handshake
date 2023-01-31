@@ -15,18 +15,18 @@ pub struct ConnectionHandle {
     to_actor_sender: tokio::sync::mpsc::Sender<ToConnectionHandle>,
     from_actor_receiver: tokio::sync::mpsc::Receiver<FromConnectionHandle>,
     network: constants::Network,
-    #[allow(dead_code)]
-    actor_handle: tokio::task::JoinHandle<()>,
     peer_address: SocketAddr,
     sender_address: SocketAddr,
+    #[allow(dead_code)]
+    actor_handle: tokio::task::JoinHandle<()>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum ToConnectionHandle {
     ToBitcoinNode(RawNetworkMessage),
 }
 
-#[derive(Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum FromConnectionHandle {
     /// Message from the bitcoin node. We are not interested in the magic number,
     /// therefore we are using NetworkMessage instead of RawNetworkMessage.

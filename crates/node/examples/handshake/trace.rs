@@ -15,7 +15,6 @@ pub fn init_tracing() {
         .with_line_number(true)
         .with_thread_ids(false)
         .with_target(false);
-    // .json();
     tracing_subscriber::registry()
         .with(fmt_layer)
         .with(env)

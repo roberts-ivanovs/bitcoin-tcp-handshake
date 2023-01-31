@@ -32,6 +32,8 @@ impl ConnectionActor {
         })
     }
 
+    /// Start the actor that handles the connection to the bitcoin node. Process messages and build a common state.
+    /// NOTE: The common state is not actually built right now, room for improvement.
     pub(super) async fn run(self) {
         let read_stream = self.stream.try_clone().expect("Failed to clone stream");
         let write_stream = self.stream;

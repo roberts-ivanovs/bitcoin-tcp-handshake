@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
 
     // Init tracing
     trace::init_tracing();
-    tracing::info!("(enable DEBUG mode to view full message)");
+    tracing::info!("(set RUST_LOG=debug mode to view full node messages)");
 
     // Connect to the node
     let mut node = BitcoinConnector::new(settings)

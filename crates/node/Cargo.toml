@@ -3,6 +3,9 @@ name = "node"
 version = "0.1.0"
 edition = "2021"
 
+[[example]]
+name = "handshake"
+
 [dependencies]
 # Our libraries
 settings.workspace = true
@@ -22,3 +25,11 @@ thiserror.workspace = true
 
 # Bitcoin data types
 bitcoin.workspace = true
+
+
+[dev-dependencies]
+# Logging
+tracing-subscriber.workspace = true
+
+# Error handling
+anyhow.workspace = true

@@ -1,3 +1,4 @@
+
 use std::net::SocketAddr;
 
 use config::{Config, Environment, File, FileFormat};
@@ -5,7 +6,7 @@ use serde::Deserialize;
 
 use crate::configs::BASE_CONFIG;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize)]
 pub struct Settings {
     peer_address: SocketAddr,
     sender_address: SocketAddr,
