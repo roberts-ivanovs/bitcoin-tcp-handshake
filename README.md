@@ -37,10 +37,11 @@ cargo run -p node --example handshake
 ### Handshake
 Start the handshake with a foreign node. The following steps have been taken from [the docs](https://developer.bitcoin.org/devguide/p2p_network.html#connecting-to-peers):
 1. Init a TCP connection to the target node
-2. Connecting to a peer is done by sending a "version" message, which contains your version number, block, and current time to the remote node
-3. The remote node responds with its own "version" message.
-4. Then both nodes send a "verack" message to the other node to indicate the connection has been established.
-5. Once connected, the client can send to the remote node getaddr and "addr" messages to gather additional peers.
+2. Connecting to a peer is done by sending a `version` message, which contains your version number, block, and current time to the remote node
+3. The remote node responds with its own `version` message.
+4. Then both nodes send a `verack` message to the other node to indicate the connection has been established.
+5. Once connected, the client can send to the remote node `getaddr` and `addr` messages to gather additional peers.
+6. The handshake is complete after `verack` message is received from the remote node. To prove that the connection is successful, further `getaddr` message is sent and a response is awaited.
 
 ### Code overview
 1. The `settings` crate will parse the env variables, as well as the local `config.base.toml` config file. It provides a `Settings` struct that can be used to configure the application.
