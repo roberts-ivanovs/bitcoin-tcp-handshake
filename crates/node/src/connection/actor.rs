@@ -106,8 +106,7 @@ impl ConnectionActor {
                     ToConnectionHandle::ToBitcoinNode(msg) => {
                         let success = tokio::task::block_in_place(|| {
                             let msg = encode::serialize(&msg);
-                            let _ = write_stream.write_all(msg.as_slice());
-                            write_stream.flush()
+                            write_stream.write_all(msg.as_slice())
                         });
 
                         if success.is_err() {
