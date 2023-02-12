@@ -1,5 +1,5 @@
 use std::io::Write;
-use std::net::{Shutdown, TcpStream};
+use std::net::TcpStream;
 
 use bitcoin::consensus::encode;
 use bitcoin::network::constants;
@@ -10,6 +10,9 @@ use super::handle::ToConnectionHandle;
 use crate::error::Error;
 use crate::FromConnectionHandle;
 
+/// The protocol driver is responsible for handling and responding to the protocol
+/// messages (from the node) and actionable commands (from the user).
+#[derive(Debug)]
 pub(crate) struct ProtocolDriver {
     pub(crate) write_stream: TcpStream,
     pub(crate) network: constants::Network,
@@ -23,6 +26,10 @@ impl ProtocolDriver {
         }
     }
 
+    /// Handle incoming messages from the connected node and process commands from the user.
+    /// This is the main loop for processing messages, this is the part that actually tries to implement the protocol.
+    ///
+    /// We depend on generic streams because this function does not care about the underlying provider of the messages.
     pub(crate) async fn drive(
         &mut self,
         incoming_commands: impl Stream<Item = ToConnectionHandle>,
@@ -45,7 +52,13 @@ impl ProtocolDriver {
         }
     }
 
-    pub(crate) fn handle_messages_from_node(
+    /// Process messages from the connected node.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the message is None OR we cannot
+    /// send any more messages to the node.
+    pub fn handle_messages_from_node(
         &mut self,
         msg: Option<FromConnectionHandle>,
     ) -> Result<(), Error> {
@@ -67,7 +80,13 @@ impl ProtocolDriver {
         }
     }
 
-    pub(crate) fn handle_incoming_commands(
+    /// Process commands from the user.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the message is None OR we cannot
+    /// send any more messages to the node.
+    pub fn handle_incoming_commands(
         &mut self,
         msg: Option<ToConnectionHandle>,
     ) -> Result<(), Error> {
@@ -86,7 +105,7 @@ impl ProtocolDriver {
         }
     }
 
-    pub(crate) fn send_blocking(&mut self, msg: RawNetworkMessage) -> Result<(), Error> {
+    pub fn send_blocking(&mut self, msg: RawNetworkMessage) -> Result<(), Error> {
         tokio::task::block_in_place(|| {
             let msg = encode::serialize(&msg);
             self.write_stream.write_all(msg.as_slice())
@@ -94,7 +113,7 @@ impl ProtocolDriver {
         .map_err(|_| Error::ActorSendError)
     }
 
-    pub(crate) fn version_message(
+    pub fn version_message(
         &self,
         version: bitcoin::network::message_network::VersionMessage,
     ) -> RawNetworkMessage {
@@ -112,6 +131,7 @@ impl ProtocolDriver {
     }
 }
 
+/// Utility function to help to convert tokio::mpsc channels to a stream.
 pub(crate) fn mpsc_to_stream<T>(
     mut receiver: tokio::sync::mpsc::Receiver<T>,
 ) -> impl Stream<Item = T> {
@@ -122,6 +142,7 @@ pub(crate) fn mpsc_to_stream<T>(
     }
 }
 
+/// Utility function to help to convert tokio::broadcast channels to a stream.
 pub(crate) fn broadcast_to_stream<T: Clone>(
     mut receiver: tokio::sync::broadcast::Receiver<T>,
 ) -> impl Stream<Item = T> {

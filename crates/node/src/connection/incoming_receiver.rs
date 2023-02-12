@@ -1,11 +1,14 @@
 use std::io::BufReader;
-use std::net::{Shutdown, TcpStream};
+use std::net::TcpStream;
 
 use bitcoin::consensus::{self, Decodable};
 use bitcoin::network::message::RawNetworkMessage;
 
 use crate::FromConnectionHandle;
 
+/// The incoming receiver is responsible for reading messages from the node and
+/// propagating them to the outside world.
+#[derive(Debug)]
 pub(crate) struct IncomingReceiver {
     from_node: tokio::sync::broadcast::Sender<FromConnectionHandle>,
     read_stream: BufReader<TcpStream>,
