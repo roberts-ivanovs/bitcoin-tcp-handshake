@@ -57,4 +57,6 @@ Start the handshake with a foreign node. The following steps have been taken fro
 # Aggressive formatting
 cargo +nightly fmt --all
 cargo clippy --fix --allow-dirty --allow-staged --workspace --bins --tests
+# Linting
+cargo clippy -- -D warnings
 ```

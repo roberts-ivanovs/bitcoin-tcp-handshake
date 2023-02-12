@@ -19,6 +19,8 @@ rand.workspace = true
 
 # Async
 tokio.workspace = true
+futures.workspace = true
+async-stream.workspace = true
 
 # Error handling
 thiserror.workspace = true
