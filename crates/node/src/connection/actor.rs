@@ -1,56 +1,57 @@
-use std::net::TcpStream;
-///! This module contains the actor that handles the connection to the bitcoin node.
-///! Sadly [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin) only supports a blocking interface for parsing network messages.
-///! There are [open discussions regarding this issue](https://github.com/rust-bitcoin/rust-bitcoin/issues/1251), but for now we have to use a blocking interface.
-use std::{
-    io::{BufReader, Write},
-    net::Shutdown,
-};
+use std::net::Shutdown;
 
-use bitcoin::consensus::{encode, Decodable};
-use bitcoin::network::message::RawNetworkMessage;
+use bitcoin::network::constants;
 
 use super::handle::ToConnectionHandle;
-use super::FromConnectionHandle;
-// use tokio::net::TcpStream;
+use super::incoming_receiver::IncomingReceiver;
+use super::protocol_driver::ProtocolDriver;
+use super::{protocol_driver, FromConnectionHandle};
 use crate::error::Error;
 
 pub struct ConnectionActor {
     stream: std::net::TcpStream,
-    incoming_messages: tokio::sync::mpsc::Receiver<ToConnectionHandle>,
-    outgoing_messages: tokio::sync::mpsc::Sender<FromConnectionHandle>,
+    incoming_commands: tokio::sync::mpsc::Receiver<ToConnectionHandle>,
+    from_node: tokio::sync::broadcast::Sender<FromConnectionHandle>,
+    network: constants::Network,
 }
 
 impl ConnectionActor {
     pub(super) fn new(
         address: std::net::SocketAddr,
-        incoming_messages: tokio::sync::mpsc::Receiver<ToConnectionHandle>,
-        outgoing_messages: tokio::sync::mpsc::Sender<FromConnectionHandle>,
+        incoming_commands: tokio::sync::mpsc::Receiver<ToConnectionHandle>,
+        from_node: tokio::sync::broadcast::Sender<FromConnectionHandle>,
+        network: constants::Network,
     ) -> Result<Self, Error> {
         let stream = std::net::TcpStream::connect(address)?;
         Ok(Self {
             stream,
-            incoming_messages,
-            outgoing_messages,
+            incoming_commands,
+            from_node,
+            network,
         })
     }
 
-    /// Start the actor that handles the connection to the bitcoin node. Process messages and build a common state.
-    /// NOTE: The common state is not actually built right now, room for improvement.
+    /// Start the actor that handles the connection to the bitcoin node. Process messages and
+    /// build a common state. NOTE: The common state is not actually built right now, room for
+    /// improvement.
     pub(super) async fn run(self) {
         let read_stream = self.stream.try_clone().expect("Failed to clone stream");
-        let write_stream = self.stream;
+        let write_stream = self.stream.try_clone().expect("Failed to clone stream");
 
-        let mut read_task = Self::start_read_task(self.outgoing_messages, read_stream);
-        let mut write_task = Self::create_write_task(self.incoming_messages, write_stream);
-
+        let mut protocol_driver_task = Self::init_protocol_driver(
+            ProtocolDriver::new(write_stream, self.network),
+            self.incoming_commands,
+            self.from_node.subscribe(),
+        );
+        let mut broadcast_task =
+            Self::init_node_message_broadcast(IncomingReceiver::new(self.from_node, read_stream));
         loop {
             tokio::select! {
-                _ = (&mut read_task) => {
+                _ =(&mut broadcast_task) => {
                     tracing::warn!("Read task closed");
                     break;
                 }
-                _ = (&mut write_task) => {
+                _ =(&mut protocol_driver_task) => {
                     tracing::warn!("Read task closed");
                     break;
                 }
@@ -61,65 +62,36 @@ impl ConnectionActor {
             };
         }
 
-        read_task.abort();
-        write_task.abort();
+        // Abort the tasks
+        broadcast_task.abort();
+        protocol_driver_task.abort();
+
+        tracing::warn!("Failed to process stream messages, closing connection");
+        let _ = self.stream.shutdown(Shutdown::Both);
+
         tracing::info!("Socket stream processing over");
     }
 
-    /// Read messages from the stream and propagate them to the outside world
-    fn start_read_task(
-        outgoing_messages: tokio::sync::mpsc::Sender<FromConnectionHandle>,
-        read_stream: TcpStream,
+    /// Receive messages from the outside world and write them to the stream
+    fn init_protocol_driver(
+        mut protocol_driver: ProtocolDriver,
+        incoming_commands: tokio::sync::mpsc::Receiver<ToConnectionHandle>,
+        from_node: tokio::sync::broadcast::Receiver<FromConnectionHandle>,
     ) -> tokio::task::JoinHandle<()> {
         tokio::spawn(async move {
-            let mut read_stream = BufReader::new(read_stream);
-            loop {
-                match tokio::task::block_in_place(|| {
-                    RawNetworkMessage::consensus_decode(&mut read_stream)
-                }) {
-                    Ok(msg) => {
-                        let sent = outgoing_messages
-                            .send(FromConnectionHandle::FromBitcoinNode(msg.payload))
-                            .await;
-                        if sent.is_err() {
-                            tracing::warn!("Outgoing message channel is closed");
-                            break;
-                        }
-                    }
-                    Err(err) => {
-                        // https://www.reddit.com/r/rust/comments/b095ag/failed_to_fill_whole_buffer_error_with_bufreader/
-                        // https://stackoverflow.com/questions/70739158/failed-to-fill-whole-buffer-error-message-when-trying-to-deserialise-an-object
-                        tracing::error!("Failed to read-decode message from the stream: {:?}. This usually happens when the node sends some data that we cannot deserialize.", err);
-                        let _ = read_stream.get_ref().shutdown(Shutdown::Both);
-                        break;
-                    }
-                }
-            }
+            protocol_driver
+                .drive(
+                    protocol_driver::mpsc_to_stream(incoming_commands),
+                    protocol_driver::broadcast_to_stream(from_node),
+                )
+                .await;
         })
     }
 
     /// Receive messages from the outside world and write them to the stream
-    fn create_write_task(
-        mut incoming_messages: tokio::sync::mpsc::Receiver<ToConnectionHandle>,
-        mut write_stream: TcpStream,
-    ) -> tokio::task::JoinHandle<()> {
+    fn init_node_message_broadcast(mut receiver: IncomingReceiver) -> tokio::task::JoinHandle<()> {
         tokio::spawn(async move {
-            while let Some(msg) = incoming_messages.recv().await {
-                match msg {
-                    ToConnectionHandle::ToBitcoinNode(msg) => {
-                        let success = tokio::task::block_in_place(|| {
-                            let msg = encode::serialize(&msg);
-                            write_stream.write_all(msg.as_slice())
-                        });
-
-                        if success.is_err() {
-                            tracing::warn!("Failed to write message to the stream");
-                            let _ = write_stream.shutdown(Shutdown::Both);
-                            break;
-                        }
-                    }
-                }
-            }
+            receiver.broadcast_from_node().await;
         })
     }
 }

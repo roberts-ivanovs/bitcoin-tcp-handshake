@@ -1,5 +1,7 @@
 mod actor;
 mod handle;
+mod incoming_receiver;
+mod protocol_driver;
 
 use std::marker::PhantomData;
 
@@ -57,10 +59,7 @@ impl BitcoinConnection<PreHandshake> {
     pub async fn perform_handshake(mut self) -> Result<BitcoinConnection<Connected>, Error> {
         // handshake data specific validation should happen at this level.
         tracing::info!("Initiating handshake");
-        self.connection.send_version().await?;
-        self.connection.receive_version().await?;
-        self.connection.send_verack().await?;
-        self.connection.receive_verack().await?;
+        self.connection.init_handshake().await?;
 
         tracing::info!("Handshake completed successfully");
         let connection = BitcoinConnection::<Connected>::new(self.settings, self.connection);
